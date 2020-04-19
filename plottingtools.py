@@ -42,7 +42,7 @@ def viztsne(X, S, setcolor, setlabel, perp):
     Xemb = TSNE(n_components=2, random_state=256).fit_transform(X)
     
     plt.scatter(Xemb[:,0], Xemb[:,1], c="lightskyblue")
-    plt.scatter(Xemb[S,0], Xemb[S,1], facecolors="none", edgecolors=setcolor, linewidth=3, label=setlabel)
+    plt.scatter(Xemb[S,0], Xemb[S,1], facecolors="none", edgecolors=setcolor, linewidth=2, label=setlabel)
     plt.legend()
     
 #%% Plot TSNE of subset selection -- with Discrete Memberships
@@ -62,5 +62,35 @@ def viztsne_DMQ(X, Memvec, memcolors, S, setcolor, setlabel, perp):
     for jj in range(p):
         memgrp = np.argwhere(Memvec[:,jj])
         plt.scatter(Xemb[memgrp,0], Xemb[memgrp,1], c=memcolors[jj])
-    plt.scatter(Xemb[S,0], Xemb[S,1], facecolors="none", edgecolors=setcolor, linewidth=3, label=setlabel)
+    plt.scatter(Xemb[S,0], Xemb[S,1], facecolors="none", edgecolors=setcolor, linewidth=2, label=setlabel)
     plt.legend()
+
+#%% Plot TSNE of subset selection -- with Intersecting Memberships
+
+def viztsne_IMQ(X, Memvec, memcolors, S, setcolor, setlabel, perp):
+    """ Given an nxm feature matrix X
+        A selection of indices S of size k < n
+        An n x p Membership matrix for p groups
+        Plot the selection's 2d TSNE
+    """
+    
+    [n,m] = X.shape
+    p = Memvec.shape[1]
+    
+    Xemb = TSNE(n_components=2, random_state=256).fit_transform(X)
+    
+    plt.figure(figsize=(p*5, 5))
+    for jj in range(p):
+        plt.subplot(1,p,jj+1)
+        plt.scatter(Xemb[:,0], Xemb[:,1], c=memcolors[0])
+        
+        memgrp = np.argwhere(Memvec[:,jj])
+        plt.scatter(Xemb[memgrp,0], Xemb[memgrp,1], c=memcolors[1], label="group{}".format(jj+1))
+        
+        plt.scatter(Xemb[S,0], Xemb[S,1], facecolors="none", edgecolors=setcolor, linewidth=2, label=setlabel)
+        plt.legend()
+    
+
+#%% Plot TSNE of subset selection -- with Feature Quotas
+
+#

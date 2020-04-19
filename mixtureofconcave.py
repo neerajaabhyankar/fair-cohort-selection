@@ -67,11 +67,11 @@ def greedygains_submod(V, X, mixw, k):
 
 #%% Greedy for DMQ
 
-def greedyquota_submod(V, X, mixw, k):
+def greedyquota_submod(V, X, mixw, Memvec, quo, k):
     """ For the disjoint membership quota.
-		M is an n x p one-hot matrix (exactly one 1 per row).
-		q is a p x 1 vector.
-		Output a subset that satisfies the quotas.
+        Memvec is an n x p one-hot matrix (exactly one 1 per row).
+        quo is a p x 1 vector.
+        Output a subset that satisfies the quotas.
     """
     
     [n,m] = X.shape
@@ -86,7 +86,39 @@ def greedyquota_submod(V, X, mixw, k):
     ff = 0 # assume normalized for now
     objs[0] = ff
     
-    for ii in range(k):
+    """ Quota-filling stage """
+    
+    ii = 0
+    Vsat = np.copy(V) # only for use in the quota-filling stage
+    while ii < np.sum(quo):
+        
+        maxgain = -100
+        greedyv = np.random.choice(Vsat)
+        
+        for vidx in range(len(Vsat)):
+            gain = submodgains(X, modA, ff, Vsat[vidx], mixw)
+            if gain > maxgain:
+                maxgain = gain
+                greedyv = Vsat[vidx]
+        
+        # add element to A, update gains
+        A = np.append(A, greedyv)
+        modA += X[greedyv,:]
+        ff += maxgain
+        objs[ii+1] = ff
+        
+        # remove from V, remove all from Vsat if quota filled
+        V = V[V!=greedyv]
+        grp = np.argwhere(Memvec[greedyv])
+        if np.sum(Memvec[A,grp]) >= quo[grp]:
+            Vsat = np.delete(V, np.argwhere(Memvec[:,grp]))
+        
+        ii += 1
+    
+    
+    """ Regular greedy stage """
+    
+    while ii < k:
         
         maxgain = -100
         greedyv = np.random.choice(V)
@@ -103,6 +135,8 @@ def greedyquota_submod(V, X, mixw, k):
         V = V[V!=greedyv]
         ff += maxgain
         objs[ii+1] = ff
+        
+        ii += 1
     
     return A, objs
 
