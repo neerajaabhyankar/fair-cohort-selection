@@ -5,6 +5,7 @@ import math
 
 import numpy as np
 from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
@@ -45,6 +46,24 @@ def viztsne(X, S, setcolor, setlabel, perp):
     plt.scatter(Xemb[S,0], Xemb[S,1], facecolors="none", edgecolors=setcolor, linewidth=2, label=setlabel)
     plt.legend()
     
+#%% Plot PCA reduction of subset selection -- with Discrete Memberships
+
+def vizpca(X, S, setcolor, setlabel, perp):
+    """ Given an nxm feature matrix X
+        A selection of indices S of size k < n
+        An n x p Membership matrix for p groups
+        Plot the selection's 2d PCA
+    """
+    
+    [n,m] = X.shape
+    p = Memvec.shape[1]
+    
+    Xemb = PCA(n_components=m_features).fit(X).transform(X)[:,:2]
+    
+    plt.scatter(Xemb[:,0], Xemb[:,1], c="lightskyblue")
+    plt.scatter(Xemb[S,0], Xemb[S,1], facecolors="none", edgecolors=setcolor, linewidth=2, label=setlabel)
+    plt.legend()
+    
 #%% Plot TSNE of subset selection -- with Discrete Memberships
 
 def viztsne_DMQ(X, Memvec, memcolors, S, setcolor, setlabel, perp):
@@ -58,6 +77,26 @@ def viztsne_DMQ(X, Memvec, memcolors, S, setcolor, setlabel, perp):
     p = Memvec.shape[1]
     
     Xemb = TSNE(n_components=2, random_state=256).fit_transform(X)
+    
+    for jj in range(p):
+        memgrp = np.argwhere(Memvec[:,jj])
+        plt.scatter(Xemb[memgrp,0], Xemb[memgrp,1], c=memcolors[jj])
+    plt.scatter(Xemb[S,0], Xemb[S,1], facecolors="none", edgecolors=setcolor, linewidth=2, label=setlabel)
+    plt.legend()
+
+#%% Plot PCA reduction of subset selection -- with Discrete Memberships
+
+def vizpca_DMQ(X, Memvec, memcolors, S, setcolor, setlabel, perp):
+    """ Given an nxm feature matrix X
+        A selection of indices S of size k < n
+        An n x p Membership matrix for p groups
+        Plot the selection's 2d PCA
+    """
+    
+    [n,m] = X.shape
+    p = Memvec.shape[1]
+    
+    Xemb = PCA(n_components=m_features).fit(X).transform(X)[:,:2]
     
     for jj in range(p):
         memgrp = np.argwhere(Memvec[:,jj])

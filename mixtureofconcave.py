@@ -16,7 +16,7 @@ def submodgains(X, modA, fA, aa, mixw):
         Where f(A) = \sum_{j=1}^m (w_j * \phi(\sum_{i \in A} X_{ij}))
     """
     
-    modAa = modA + X[aa,:]
+    modAa = modA + X[aa,:] if aa is not None else modA
     
     # options: modA**0.5, np.log(1+modA), (1-np.exp(-modA)), modA/(1+modA)
     fAa = np.dot(mixw, modAa**0.2)
