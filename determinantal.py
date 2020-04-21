@@ -34,7 +34,7 @@ def greedygains_logsubmod(V, X, k):
     K = X @ X.transpose()
     n = K.shape[0]
     
-    if V == None:
+    if V is None:
         V = np.arange(n)
     
     objs = np.empty(k+1)

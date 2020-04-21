@@ -35,7 +35,7 @@ def greedygains_submod(V, X, mixw, k):
     
     [n,m] = X.shape
     
-    if V == None:
+    if V is None:
         V = np.arange(n)
     
     objs = np.empty(k+1)
@@ -67,7 +67,7 @@ def greedygains_submod(V, X, mixw, k):
 
 #%% Greedy for DMQ
 
-def greedyquota_submod(V, X, mixw, Memvec, quo, k):
+def greedyquota_submod(V, X, mixw, Memvec, quo, k ,verbose=False):
     """ For the disjoint membership quota.
         Memvec is an n x p one-hot matrix (exactly one 1 per row).
         quo is a p x 1 vector.
@@ -76,7 +76,7 @@ def greedyquota_submod(V, X, mixw, Memvec, quo, k):
     
     [n,m] = X.shape
     
-    if V == None:
+    if V is None:
         V = np.arange(n)
     
     objs = np.empty(k+1)
@@ -110,8 +110,24 @@ def greedyquota_submod(V, X, mixw, Memvec, quo, k):
         # remove from V, remove all from Vsat if quota filled
         V = V[V!=greedyv]
         grp = np.argwhere(Memvec[greedyv])
+
+        if verbose:
+            print("selected element", greedyv)
+            print("lies in group", grp)
+            print("new A", A)
+
         if np.sum(Memvec[A,grp]) >= quo[grp]:
-            Vsat = np.delete(V, np.argwhere(Memvec[:,grp]))
+            if verbose:
+                print("Quota for group {} satisfied by set {}".format(grp, A[Memvec[A,grp].flatten().astype(bool)]))
+                print("Deleting {}".format(Vsat[Memvec[Vsat,grp].flatten().astype(bool)]))
+            Vsat = np.delete(Vsat, np.argwhere(Memvec[Vsat,grp].flatten()))
+        else:
+            if verbose:
+                print("Only deleting", Vsat[Vsat==greedyv])
+            Vsat = Vsat[Vsat!=greedyv]
+
+        if verbose:
+            print("new Vsat", Vsat)
         
         ii += 1
     
@@ -135,6 +151,11 @@ def greedyquota_submod(V, X, mixw, Memvec, quo, k):
         V = V[V!=greedyv]
         ff += maxgain
         objs[ii+1] = ff
+        
+        if verbose:
+            print("selected element", greedyv)
+            print("lies in group", np.argwhere(Memvec[greedyv]))
+            print("new A", A)
         
         ii += 1
     
