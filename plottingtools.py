@@ -48,7 +48,7 @@ def viztsne(X, S, setcolor, setlabel, perp):
     
 #%% Plot PCA reduction of subset selection -- with Discrete Memberships
 
-def vizpca(X, S, setcolor, setlabel, perp):
+def vizpca(X, S, setcolor, setlabel):
     """ Given an nxm feature matrix X
         A selection of indices S of size k < n
         An n x p Membership matrix for p groups
@@ -56,9 +56,8 @@ def vizpca(X, S, setcolor, setlabel, perp):
     """
     
     [n,m] = X.shape
-    p = Memvec.shape[1]
     
-    Xemb = PCA(n_components=m_features).fit(X).transform(X)[:,:2]
+    Xemb = PCA(n_components=m).fit(X).transform(X)[:,:2]
     
     plt.scatter(Xemb[:,0], Xemb[:,1], c="lightskyblue")
     plt.scatter(Xemb[S,0], Xemb[S,1], facecolors="none", edgecolors=setcolor, linewidth=2, label=setlabel)
@@ -86,7 +85,7 @@ def viztsne_DMQ(X, Memvec, memcolors, S, setcolor, setlabel, perp):
 
 #%% Plot PCA reduction of subset selection -- with Discrete Memberships
 
-def vizpca_DMQ(X, Memvec, memcolors, S, setcolor, setlabel, perp):
+def vizpca_DMQ(X, Memvec, memcolors, S, setcolor, setlabel):
     """ Given an nxm feature matrix X
         A selection of indices S of size k < n
         An n x p Membership matrix for p groups
@@ -96,7 +95,7 @@ def vizpca_DMQ(X, Memvec, memcolors, S, setcolor, setlabel, perp):
     [n,m] = X.shape
     p = Memvec.shape[1]
     
-    Xemb = PCA(n_components=m_features).fit(X).transform(X)[:,:2]
+    Xemb = PCA(n_components=m).fit(X).transform(X)[:,:2]
     
     for jj in range(p):
         memgrp = np.argwhere(Memvec[:,jj])
