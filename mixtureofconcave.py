@@ -67,7 +67,7 @@ def greedygains_submod(V, X, mixw, k):
 
 #%% Greedy for DMQ
 
-def greedyquota_submod(V, X, mixw, Memvec, quo, k ,verbose=False):
+def greedyquota_submod(V, X, mixw, Memvec, quo, k, verbose=False):
     """ For the disjoint membership quota.
         Memvec is an n x p one-hot matrix (exactly one 1 per row).
         quo is a p x 1 vector.
@@ -75,10 +75,16 @@ def greedyquota_submod(V, X, mixw, Memvec, quo, k ,verbose=False):
     """
     
     [n,m] = X.shape
+    p = Memvec.shape[1]
     
     if V is None:
         V = np.arange(n)
     
+    for grp in range(p):
+        if np.sum(Memvec[:,grp]) < quo[grp]:
+            print("Not enough members in group {}, infeasible problem.".format(grp))
+            return None, None
+        
     objs = np.empty(k+1)
     
     A = np.empty(0, int)
@@ -90,6 +96,12 @@ def greedyquota_submod(V, X, mixw, Memvec, quo, k ,verbose=False):
     
     ii = 0
     Vsat = np.copy(V) # only for use in the quota-filling stage
+    
+    # remove from Vsat groups with zero quota
+    for grp in range(p):
+        if quo[grp] < 1:
+            Vsat = np.delete(Vsat, np.argwhere(Memvec[Vsat,grp].flatten()))
+    
     while ii < np.sum(quo):
         
         maxgain = -100
@@ -114,22 +126,26 @@ def greedyquota_submod(V, X, mixw, Memvec, quo, k ,verbose=False):
         if verbose:
             print("selected element", greedyv)
             print("lies in group", grp)
-            print("new A", A)
+            #print("new A", A)
 
         if np.sum(Memvec[A,grp]) >= quo[grp]:
             if verbose:
-                print("Quota for group {} satisfied by set {}".format(grp, A[Memvec[A,grp].flatten().astype(bool)]))
+                print("\n Quota for group {} satisfied by set {} \n".format(
+                        grp, A[Memvec[A,grp].flatten().astype(bool)])
+                     )
                 print("Deleting {}".format(Vsat[Memvec[Vsat,grp].flatten().astype(bool)]))
             Vsat = np.delete(Vsat, np.argwhere(Memvec[Vsat,grp].flatten()))
         else:
             if verbose:
                 print("Only deleting", Vsat[Vsat==greedyv])
             Vsat = Vsat[Vsat!=greedyv]
-
-        if verbose:
-            print("new Vsat", Vsat)
         
         ii += 1
+        
+    if verbose:
+        print("Quotas filled.")
+        print("quotas : ", quo)
+        print("Representatives : ", [np.sum(Memvec[A,jj]) for jj in range(p)])
     
     
     """ Regular greedy stage """
@@ -155,10 +171,10 @@ def greedyquota_submod(V, X, mixw, Memvec, quo, k ,verbose=False):
         if verbose:
             print("selected element", greedyv)
             print("lies in group", np.argwhere(Memvec[greedyv]))
-            print("new A", A)
+            #print("new A", A)
         
         ii += 1
     
     return A, objs
 
-#%%
+#%% Greedy for IMQ
