@@ -67,7 +67,7 @@ def greedygains_submod(V, X, mixw, k):
 
 #%% Greedy for DMQ
 
-def greedyquota_submod(V, X, mixw, Memvec, quo, k, verbose=False):
+def greedyDMquota_submod(V, X, mixw, Memvec, quo, k, verbose=False):
     """ For the disjoint membership quota.
         Memvec is an n x p one-hot matrix (exactly one 1 per row).
         quo is a p x 1 vector.
