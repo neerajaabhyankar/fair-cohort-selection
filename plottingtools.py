@@ -132,3 +132,39 @@ def viztsne_IMQ(X, Memvec, memcolors, S, setcolor, setlabel, perp):
 #%% Plot TSNE of subset selection -- with Feature Quotas
 
 #
+
+
+#%% Plot Group Membership histograms of selections -- Membership Quota
+
+def vizbalance_MQ(V, Memvec, vcolor, quo, S, setcolor, setlabel="selection"):
+    """ Given a ground set (n)
+        With Membership Assignments (n x p)
+        And optionally a quota
+        A selection of indices S of size k < n
+        Plot the selection's 2d PCA
+    """
+    
+    [n,p] = Memvec.shape
+    if V is None:
+        V = np.arange(n)
+    
+    Vgroups = np.zeros(p)
+    Sgroups = np.zeros(p)
+    unsat = np.empty((0)).astype(int)
+    
+    for jj in range(p):
+        Vgroups[jj] = np.sum(Memvec[V,jj])
+        Sgroups[jj] = np.sum(Memvec[S,jj])
+        if Sgroups[jj] < quo[jj]:
+            unsat = np.append(unsat, jj)
+    
+    plt.bar(np.arange(p), Vgroups, color=vcolor)
+    plt.bar(np.arange(p), Sgroups, color=setcolor, label=setlabel)
+    plt.plot(np.arange(p), quo, marker="o", linestyle="--", c="white", markersize=7)
+    plt.scatter(unsat, quo[unsat], c="red", s=7, zorder=10)
+    plt.legend()
+
+#%%
+
+#
+

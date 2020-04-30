@@ -178,3 +178,123 @@ def greedyDMquota_submod(V, X, mixw, Memvec, quo, k, verbose=False):
     return A, objs
 
 #%% Greedy for IMQ
+
+def greedyIMquota_submod(V, X, mixw, Memvec, quo, k, verbose=False):
+    """ For the intersecting membership quota.
+        Memvec is an n x p membership matrix (any number of ones per row).
+        quo is a p x 1 vector.
+        Output a subset that satisfies the quotas.
+    """
+    
+    [n,m] = X.shape
+    p = Memvec.shape[1]
+    
+    if V is None:
+        V = np.arange(n)
+    
+    for grp in range(p):
+        if np.sum(Memvec[:,grp]) < quo[grp]:
+            print("Not enough members in group {}, infeasible problem.".format(grp))
+            return None, None
+        
+    objs = np.empty(k+1)
+    
+    A = np.empty(0, int)
+    modA = np.sum(X[A,:], axis=0)
+    ff = 0 # assume normalized for now
+    objs[0] = ff
+    
+    """ Quota-filling stage """
+    
+    Memsat = np.copy(Memvec) # look at this like a "saturation potential"
+    sat = np.ones_like(quo) # to keep track of what is satisfied
+    
+    # ignore groups with zero quota
+    for grp in range(p):
+        if quo[grp] < 1:
+            Memsat[:,grp] = 0
+            sat[grp] = 0
+    
+    Vsat = V[np.sum(Memsat[V,:], axis=1)>0] # only for use in the quota-filling stage
+    ii = 0
+
+    while (np.sum(sat) > 0) & (ii < k):
+        
+        maxgain = -100
+        greedyv = np.random.choice(Vsat)
+        
+        for vidx in range(len(Vsat)):
+            gain = submodgains(X, modA, ff, Vsat[vidx], mixw)
+            if gain > maxgain:
+                maxgain = gain
+                greedyv = Vsat[vidx]
+        
+        # add element to A, update gains
+        A = np.append(A, greedyv)
+        modA += X[greedyv,:]
+        ff += maxgain
+        objs[ii+1] = ff
+        
+        grps = np.argwhere(Memsat[greedyv]).flatten() # note that grp can be a list
+        
+        if verbose:
+            print("selected element", greedyv)
+            print("lies in unsatisfied groups", grps)
+            #print("new A", A)
+        
+        # remove from V and Vsat
+        V = V[V!=greedyv]
+        Memsat[greedyv,:] = 0
+        Vsat = Vsat[Vsat!=greedyv]
+        
+        # also remove from Vsat those who have no uniqueness to offer
+        for grp in grps:
+            if np.sum(Memvec[A,grp]) >= quo[grp]:
+                sat[grp] = 0
+                Memsat[:,grp] = 0
+                if verbose:
+                    print("\n Quota for group {} satisfied by set {} \n".format(
+                            grp, A[Memvec[A,grp].flatten().astype(bool)]
+                        ))
+                    print("Deleting {}".format(
+                            Vsat[np.sum(Memsat[Vsat,:], axis=1)==0]
+                        ))
+                Vsat = Vsat[np.sum(Memsat[Vsat,:], axis=1)>0]
+        
+        ii += 1
+        
+    if verbose:
+        print("Quotas filled.")
+        print("quotas : ", quo)
+        print("Representatives : ", [np.sum(Memvec[A,jj]) for jj in range(p)])
+    
+    """ Regular greedy stage """
+    
+    while ii < k:
+        
+        maxgain = -100
+        greedyv = np.random.choice(V)
+        
+        for vidx in range(len(V)):
+            gain = submodgains(X, modA, ff, V[vidx], mixw)
+            if gain > maxgain:
+                maxgain = gain
+                greedyv = V[vidx]
+        
+        # add element to A, remove from V, update gains
+        A = np.append(A, greedyv)
+        modA += X[greedyv,:]
+        V = V[V!=greedyv]
+        ff += maxgain
+        objs[ii+1] = ff
+        
+        if verbose:
+            print("selected element", greedyv)
+            print("lies in group", np.argwhere(Memvec[greedyv]))
+            #print("new A", A)
+        
+        ii += 1
+    
+    return A, objs
+
+#%%
