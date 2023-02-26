@@ -7,7 +7,7 @@ def concave_function(x):
     """
     \phi(x)
     """
-    # options: modA**0.5, np.log(1+modA), (1-np.exp(-modA)), modA/(1+modA)
+    # options: x**0.5, np.log(1+x), (1-np.exp(-x)), x/(1+x)
     return x**0.5
 
 

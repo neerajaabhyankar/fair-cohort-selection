@@ -62,5 +62,5 @@ def plot_membership_histogram(
     plt.xlabel("groups")
     plt.ylabel("membership counts")
     if value >= 0:
-        plt.title(f"objective value = {value}")
+        plt.title(f"objective value = {value:.4f}")
     plt.legend()
