@@ -187,11 +187,11 @@ def greedy_capacity(oracle, memberships, unfilled_capacities, k, verbose=False):
     V = np.arange(oracle.n).tolist()
     objs = []
     objs.append(0)
-        
+    
     for kk in range(k):
         
-        unfilled_groups = np.where(unfilled_capacities>0)[0]
-        V_capacity_candidates = [ii for ii in V if np.sum(memberships[ii][unfilled_groups]) > 0]
+        filled_groups = np.where(unfilled_capacities==0)[0]
+        V_capacity_candidates = [ii for ii in V if np.sum(memberships[ii][filled_groups]) == 0]
         if len(V_capacity_candidates) <= 0:
             # we ran out of candidates
             return oracle.set, objs
@@ -206,7 +206,7 @@ def greedy_capacity(oracle, memberships, unfilled_capacities, k, verbose=False):
         
         # decrement unfilled quotas
         unfilled_capacities = unfilled_capacities - memberships[greedy_winner]
-        unfilled_capacities.clip(0, k)
+        unfilled_capacities = unfilled_capacities.clip(0, k)
         
         if verbose:
             print("unfilled_capacities = ", unfilled_capacities)
