@@ -58,7 +58,7 @@ def plot_membership_histogram(
     if budgets is not None:
         plt.scatter(np.arange(p), budgets, c="white", s=16, zorder=8, label=budgetlabel)  # all budgets
     if unmet is not None:
-        plt.scatter(unmet, budgets[unmet], c="red", s=2, zorder=10, label="unmet "+budgetlabel)  # unmet budgets
+        plt.scatter(unmet, budgets[unmet], c="red", s=2, zorder=10, label="violated "+budgetlabel)  # unmet budgets
     plt.xlabel("groups")
     plt.ylabel("membership counts")
     if value >= 0:
